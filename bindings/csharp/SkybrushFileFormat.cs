@@ -83,9 +83,9 @@ Defines the 3D flight path of a drone.
 - Byte 0: Scale and flags
   - Bits 0-6: Scale factor (1-127)
   - Bit 7: Use yaw flag (0x80 if yaw is included)
-- Bytes 1-2: Start X coordinate (int16, decidegrees * scale)
-- Bytes 3-4: Start Y coordinate (int16, decidegrees * scale)  
-- Bytes 5-6: Start Z coordinate (int16, decidegrees * scale)
+- Bytes 1-2: Start X coordinate (int16, scaled millimeters)
+- Bytes 3-4: Start Y coordinate (int16, scaled millimeters)  
+- Bytes 5-6: Start Z coordinate (int16, scaled millimeters)
 - Bytes 7-8: Start yaw angle (int16, decidegrees) - only if use_yaw flag is set
 
 **Segments** (variable length):

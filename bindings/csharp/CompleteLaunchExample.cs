@@ -62,16 +62,17 @@ namespace SkybrushLaunchExample
             Console.WriteLine($"Example 1: Pre-show ground lighting -> {filename}");
             
             // Create trajectory that holds on ground, then takes off
+            // NOTE: Coordinates are in millimeters (mm)
             var trajBuilder = new TrajectoryBuilder(scale: 10, useYaw: false);
-            trajBuilder.SetStartPosition(new Vector3WithYaw(0, 0, 0, 0));
+            trajBuilder.SetStartPosition(new Vector3WithYaw(0, 0, 0, 0)); // Origin (0,0,0 mm)
             
             // Hold on ground for 5 seconds (pre-show period)
             trajBuilder.HoldPosition(5000);
             
-            // Then take off
+            // Then take off to 5 meters (5000 mm)
             trajBuilder.AppendLine(new Vector3WithYaw(0, 0, 5000, 0), 5000); // Rise to 5m
             trajBuilder.HoldPosition(10000); // Hover
-            trajBuilder.AppendLine(new Vector3WithYaw(0, 0, 0, 0), 5000); // Land
+            trajBuilder.AppendLine(new Vector3WithYaw(0, 0, 0, 0), 5000); // Land at origin
             
             byte[] trajectoryData = GetTrajectoryBytes(trajBuilder);
 
@@ -126,17 +127,25 @@ namespace SkybrushLaunchExample
                 int delayMs = i * launchDelayMs;
 
                 // Create trajectory with initial hold period
+                // NOTE: Coordinates in millimeters (mm)
                 var trajBuilder = new TrajectoryBuilder(scale: 10, useYaw: false);
-                trajBuilder.SetStartPosition(new Vector3WithYaw(i * 2000, 0, 0, 0)); // 2m spacing
+                trajBuilder.SetStartPosition(new Vector3WithYaw(i * 2000, 0, 0, 0)); // 2m spacing (2000mm)
                 
-                // Each drone waits a different amount of time
+                // Each drone waits a different amount of time (max 65535ms per HoldPosition call)
                 if (delayMs > 0)
                 {
-                    trajBuilder.HoldPosition((uint)delayMs);
+                    // Split into multiple holds if needed to avoid ushort overflow
+                    uint remainingDelay = (uint)delayMs;
+                    while (remainingDelay > 0)
+                    {
+                        uint holdDuration = Math.Min(remainingDelay, 65535);
+                        trajBuilder.HoldPosition(holdDuration);
+                        remainingDelay -= holdDuration;
+                    }
                 }
                 
                 // Then all drones follow the same flight path
-                trajBuilder.AppendLine(new Vector3WithYaw(i * 2000, 0, 5000, 0), 5000); // Takeoff
+                trajBuilder.AppendLine(new Vector3WithYaw(i * 2000, 0, 5000, 0), 5000); // Takeoff to 5m
                 trajBuilder.HoldPosition(10000); // Hover
                 trajBuilder.AppendLine(new Vector3WithYaw(i * 2000, 0, 0, 0), 5000); // Land
 
@@ -148,7 +157,14 @@ namespace SkybrushLaunchExample
                 
                 if (delayMs > 0)
                 {
-                    yawBuilder.HoldYaw((ushort)delayMs); // Hold during wait
+                    // Split yaw hold if needed (max 65535ms per delta)
+                    uint remainingDelay = (uint)delayMs;
+                    while (remainingDelay > 0)
+                    {
+                        ushort holdDuration = (ushort)Math.Min(remainingDelay, 65535);
+                        yawBuilder.HoldYaw(holdDuration);
+                        remainingDelay -= holdDuration;
+                    }
                 }
                 yawBuilder.Spin360(4000, clockwise: i % 2 == 0); // Alternating spin direction
                 
@@ -278,26 +294,36 @@ namespace SkybrushLaunchExample
 
         /// <summary>
         /// Helper to get trajectory bytes from builder.
-        /// NOTE: This is a placeholder implementation for demonstration purposes.
         /// 
-        /// In a real implementation, you would either:
-        /// 1. Use the native library's trajectory builder and extract bytes
+        /// IMPORTANT: This is a placeholder for demonstration purposes only.
+        /// DO NOT use this in production code.
+        /// 
+        /// For production use, you must either:
+        /// 1. Use the native libskybrush library to build trajectories properly
         /// 2. Implement complete trajectory binary encoding in C#
-        /// 3. Use your own trajectory generation code
+        /// 3. Use your own trajectory generation system
         /// 
-        /// The trajectory binary format is complex and requires proper encoding
-        /// of segments, coordinates, and timing data.
+        /// The trajectory binary format is complex and includes:
+        /// - Header with scale, start position, and flags
+        /// - Encoded segments with duration and coordinate deltas
+        /// - Proper compression and scaling of coordinates
         /// </summary>
         static byte[] GetTrajectoryBytes(TrajectoryBuilder builder)
         {
-            // PLACEHOLDER: This returns a minimal valid trajectory header
-            // Real implementation needed to extract actual trajectory data
+            // This placeholder warns users and provides minimal valid data
+            // Real implementation needed for production use
             
-            Console.WriteLine("  WARNING: Using placeholder trajectory data");
-            Console.WriteLine("  For production use, implement proper trajectory byte extraction");
+            throw new NotImplementedException(
+                "GetTrajectoryBytes is a placeholder. " +
+                "For production use, implement proper trajectory extraction from TrajectoryBuilder, " +
+                "or use the native libskybrush library to generate trajectory data.");
             
-            // Minimal valid trajectory: scale=10, start at origin
-            return new byte[] { 10, 0, 0, 0, 0, 0, 0, 0, 0 };
+            // If you want to run the examples for demonstration:
+            // 1. Comment out the throw above
+            // 2. Uncomment the return below
+            // 3. Remember this is NOT proper trajectory data!
+            
+            // return new byte[] { 10, 0, 0, 0, 0, 0, 0, 0, 0 }; // Minimal header only
         }
     }
 }
