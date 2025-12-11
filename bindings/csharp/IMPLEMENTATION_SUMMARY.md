@@ -70,7 +70,16 @@ Complete C# bindings for creating Skybrush drone show files (.skyb) with compreh
    - Start position, line segments, holds
 
 ### Documentation Files
-4. **SkybrushFileFormat.cs** (7.6KB) - NEW
+4. **BlockFormationGuide.cs** (13.8KB) - NEW (Comment #3640319354)
+   - **Detailed guide on how blocks are formed and written**
+   - Step-by-step block creation process
+   - Binary structure breakdown for each block type
+   - Hex output examples with explanations
+   - Little-endian encoding details
+   - Complete file formation walkthrough
+   - Debugging tips for block formation
+
+5. **SkybrushFileFormat.cs** (7.6KB)
    - Complete .skyb format reference
    - 240+ lines of documentation
    - All block types explained
@@ -78,7 +87,7 @@ Complete C# bindings for creating Skybrush drone show files (.skyb) with compreh
    - Launch timing strategies
    - Unit conversions
 
-5. **CompleteLaunchExample.cs** (13.8KB) - NEW
+6. **CompleteLaunchExample.cs** (13.8KB)
    - 4 complete working examples:
      - Pre-show ground lighting
      - Staggered launch
@@ -87,31 +96,37 @@ Complete C# bindings for creating Skybrush drone show files (.skyb) with compreh
    - Overflow handling
    - Unit clarifications
 
-6. **README.md** (Enhanced)
+7. **IMPLEMENTATION_SUMMARY.md** (7.4KB+)
+   - Feature documentation
+   - Requirements tracking
+   - Complete file listing
+
+8. **README.md** (Enhanced)
    - Complete guide for all features
    - All block types documented
    - Launch timing examples
    - Staggered launch techniques
+   - References to BlockFormationGuide
 
-7. **QUICKSTART.md** (4.4KB)
+9. **QUICKSTART.md** (4.4KB)
    - Quick reference for yaw control
    - Common commands
    - Tips and tricks
 
 ### Optional Reading Support (Requires native library)
-8. **YawControl.cs** (5.5KB)
-   - Read yaw data from .skyb files
-   - P/Invoke wrapper
+10. **YawControl.cs** (5.5KB)
+    - Read yaw data from .skyb files
+    - P/Invoke wrapper
 
-9. **YawPlayer.cs** (9.4KB)
-   - Query yaw values at specific times
-   - Iterate through setpoints
+11. **YawPlayer.cs** (9.4KB)
+    - Query yaw values at specific times
+    - Iterate through setpoints
 
-10. **SkybrushError.cs** (3.9KB)
+12. **SkybrushError.cs** (3.9KB)
     - Error code mapping
     - Exception handling
 
-11. **Example.cs** (6.2KB)
+13. **Example.cs** (6.2KB)
     - Examples for reading .skyb files
 
 ## Technical Details

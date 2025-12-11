@@ -2,6 +2,21 @@
 
 This directory contains C# bindings for creating complete Skybrush drone shows (.skyb files) with full control over all features.
 
+## Documentation Files
+
+- **BlockFormationGuide.cs** - 📖 **Detailed guide on how blocks are formed and written** (NEW)
+  - Step-by-step block creation process
+  - Binary structure of each block type
+  - Hex output examples with explanations
+  - Little-endian encoding details
+  - Complete file formation walkthrough
+  
+- **SkybrushFileFormat.cs** - Complete .skyb format reference (all block types, specs)
+- **CompleteLaunchExample.cs** - Working examples (pre-show, staggered launch, post-show)
+- **IMPLEMENTATION_SUMMARY.md** - Feature summary and requirements addressed
+- **README.md** - This file (usage guide)
+- **QUICKSTART.md** - Quick reference for yaw control
+
 ## Overview
 
 The C# bindings allow you to:
@@ -12,6 +27,32 @@ The C# bindings allow you to:
 - **Create trajectories** - 3D flight paths with precise timing
 - **Add metadata** - comments, show info, drone IDs
 - **Optional: Read existing files** - query and analyze .skyb files
+
+## How Blocks Are Formed and Written
+
+**See BlockFormationGuide.cs for complete documentation.**
+
+Quick overview of block formation:
+
+1. **Prepare data** - Build block-specific bytes
+2. **Get length** - Count bytes (max 65535)
+3. **Write type** - 1 byte block type identifier
+4. **Write length** - 2 bytes (uint16, little-endian)
+5. **Write data** - The actual block content
+
+Example:
+```csharp
+// Comment block formation
+string text = "Test";
+byte[] data = Encoding.UTF8.GetBytes(text);  // [0x54, 0x65, 0x73, 0x74]
+writer.Write((byte)3);        // Type = 3 (Comment)
+writer.Write((ushort)4);      // Length = 4 bytes (little-endian: 0x04, 0x00)
+writer.Write(data);           // Data = UTF-8 "Test"
+
+// Result: 03 04 00 54 65 73 74
+```
+
+**All blocks use little-endian encoding for multi-byte integers.**
 
 ## Quick Start - Complete Show File
 
@@ -494,6 +535,27 @@ dotnet run --project SkybrushExample.csproj path/to/your/show.skyb
 - Each delta is max 65535 milliseconds (split longer durations into multiple deltas)
 
 See `YawCreationExample.cs` for complete working examples!
+
+## Additional Documentation
+
+- **BlockFormationGuide.cs** - Comprehensive guide on how blocks are formed and written to .skyb files
+  - Step-by-step block creation process with code examples
+  - Binary structure breakdown for each block type
+  - Hex output examples with detailed explanations
+  - Little-endian encoding reference
+  - Complete file formation walkthrough
+
+- **SkybrushFileFormat.cs** - Complete .skyb format specification
+  - All 5 block types documented
+  - Binary format details
+  - Launch timing strategies
+  - Data type reference
+
+- **CompleteLaunchExample.cs** - Working examples for launch timing
+  - Pre-show ground lighting
+  - Staggered launches
+  - Post-show ground lighting
+  - Complete multi-block show files
 
 ## License
 
