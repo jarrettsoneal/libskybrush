@@ -322,9 +322,9 @@ SkybrushBinaryWriter.WriteYawControlBlock(writer, yawData);
 Yaw control: offset=0°, hold 2s, rotate 90° in 1s
 05 0B 00 00 00 00 D0 07 00 00 E8 03 84 03
 ^^ ^^^^^ ^^ ^^^^^ ^^^^^^^^^ ^^^^^^^^^
-|  |     |  |     |         delta 2: 1000ms, +900 decideg (90°)
-|  |     |  |     delta 1: 2000ms, 0 decideg (hold)
-|  |     |  offset=0 decideg
+|  |     |  |     |         delta 2: 1000ms, +900 decidegrees (90°)
+|  |     |  |     delta 1: 2000ms, 0 decidegrees (hold)
+|  |     |  offset=0 decidegrees
 |  |     flags=0 (no auto-yaw)
 |  length=11
 type=5
@@ -332,9 +332,9 @@ type=5
 
 **Breakdown of little-endian encoding:**
 - 2000ms = 0x07D0 → bytes: [0xD0, 0x07]
-- 0 decideg = 0x0000 → bytes: [0x00, 0x00]
+- 0 decidegrees = 0x0000 → bytes: [0x00, 0x00]
 - 1000ms = 0x03E8 → bytes: [0xE8, 0x03]
-- 900 decideg = 0x0384 → bytes: [0x84, 0x03]
+- 900 decidegrees = 0x0384 → bytes: [0x84, 0x03]
 
 ### Step 7: Write RTH Plan Block (Optional)
 
