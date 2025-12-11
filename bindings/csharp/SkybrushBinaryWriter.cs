@@ -88,9 +88,12 @@ namespace Skybrush
                 throw new ArgumentNullException(nameof(data));
             }
 
+            // Block length is stored as uint16 in the .skyb format (2 bytes, max 65535)
             if (data.Length > ushort.MaxValue)
             {
-                throw new ArgumentException($"Block data too large: {data.Length} bytes (max {ushort.MaxValue})", nameof(data));
+                throw new ArgumentException(
+                    $"Block data too large: {data.Length} bytes (max {ushort.MaxValue} due to .skyb format)", 
+                    nameof(data));
             }
 
             // Write block type

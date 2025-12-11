@@ -64,20 +64,39 @@ namespace Skybrush
         /// <summary>
         /// Gets or sets the initial yaw offset in degrees.
         /// This is the starting yaw angle for the entire yaw control sequence.
+        /// Valid range: -3276.7° to 3276.7° (limited by decidegree int16 storage)
         /// </summary>
         public float YawOffsetDegrees
         {
             get => yawOffsetDeg;
-            set => yawOffsetDeg = value;
+            set
+            {
+                // Clamp to valid range for decidegrees storage (int16)
+                const float maxYaw = 3276.7f; // 32767 decidegrees
+                if (value < -maxYaw || value > maxYaw)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), 
+                        $"Yaw offset must be between -{maxYaw}° and {maxYaw}°");
+                }
+                yawOffsetDeg = value;
+            }
         }
 
         /// <summary>
         /// Adds a yaw change delta to the yaw control sequence.
         /// </summary>
         /// <param name="durationMs">How long this yaw change takes, in milliseconds (max 65535)</param>
-        /// <param name="yawChangeDeg">How much the yaw changes in degrees (positive = clockwise, negative = counter-clockwise)</param>
+        /// <param name="yawChangeDeg">How much the yaw changes in degrees. Valid range: -3276.7° to 3276.7° (positive = clockwise, negative = counter-clockwise)</param>
         public void AddDelta(ushort durationMs, float yawChangeDeg)
         {
+            // Clamp to valid range for decidegrees storage (int16)
+            const float maxYawChange = 3276.7f; // 32767 decidegrees
+            if (yawChangeDeg < -maxYawChange || yawChangeDeg > maxYawChange)
+            {
+                throw new ArgumentOutOfRangeException(nameof(yawChangeDeg), 
+                    $"Yaw change must be between -{maxYawChange}° and {maxYawChange}°. " +
+                    $"For larger rotations, split into multiple deltas.");
+            }
             deltas.Add(new YawDelta(durationMs, yawChangeDeg));
         }
 
