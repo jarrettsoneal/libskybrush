@@ -1,20 +1,141 @@
-# Skybrush C# Bindings - Yaw Control
+# Skybrush C# Bindings - Complete Show Creation
 
-This directory contains C# bindings for creating yaw control in Skybrush drone shows (.skyb files).
+This directory contains C# bindings for creating complete Skybrush drone shows (.skyb files) with full control over all features.
 
 ## Overview
 
 The C# bindings allow you to:
-- **Create yaw control data programmatically** for your .skyb show files
-- Add yaw control blocks to existing show files
-- Load and read yaw control data from Skybrush binary files
-- Query yaw values at specific timestamps
-- Calculate yaw rates
-- Iterate through yaw setpoints
+- **Create complete .skyb show files** with all block types
+- **Control launch timing** - stagger drone launches, add pre-show delays
+- **Add ground lighting** - show LED colors before takeoff and after landing
+- **Build yaw control** - spins, rotations, auto-yaw mode
+- **Create trajectories** - 3D flight paths with precise timing
+- **Add metadata** - comments, show info, drone IDs
+- **Optional: Read existing files** - query and analyze .skyb files
 
-## Quick Start - Adding Yaw Control to Your Show
+## Quick Start - Complete Show File
 
-If you already know how to create .skyb files and just want to add yaw control, here's the essentials:
+```csharp
+using Skybrush;
+using System.IO;
+
+// Create show file
+using (var writer = new BinaryWriter(File.Create("myshow.skyb")))
+{
+    // 1. File header
+    SkybrushBinaryWriter.WriteFileHeader(writer);
+    
+    // 2. Metadata
+    SkybrushBinaryWriter.WriteCommentBlock(writer, "My Show Title");
+    
+    // 3. Trajectory (your flight path)
+    SkybrushBinaryWriter.WriteTrajectoryBlock(writer, trajectoryData);
+    
+    // 4. Light program (LED colors)
+    SkybrushBinaryWriter.WriteLightProgramBlock(writer, lightData);
+    
+    // 5. Yaw control (rotation)
+    var yaw = new YawControlBuilder();
+    yaw.Spin360(4000);
+    SkybrushBinaryWriter.WriteYawControlBlock(writer, yaw.Build());
+}
+```
+
+## Launch Timing and Ground Lighting
+
+### Pre-Show Ground Lighting
+
+**Show LED colors on the ground before takeoff:**
+
+1. **Light Program** starts at t=0 with your desired colors
+2. **Trajectory** holds at ground level (Z=0) for the pre-show duration
+3. **Timing**: Lights run while drone waits on ground
+
+```csharp
+// Trajectory: Hold on ground for 5 seconds, then takeoff
+var traj = new TrajectoryBuilder();
+traj.SetStartPosition(new Vector3WithYaw(0, 0, 0, 0));
+traj.HoldPosition(5000);  // 5 second pre-show hold
+traj.AppendLine(new Vector3WithYaw(0, 0, 5000, 0), 5000); // Takeoff
+
+// Light program (conceptual):
+// t=0:     Set RED    (ground)
+// t=2000:  Fade GREEN (ground)
+// t=5000:  Set WHITE  (takeoff starts)
+// t=10000: Flight colors...
+```
+
+### Staggered Launch (Launch Drones at Different Times)
+
+**Method 1: Different Hold Durations**
+
+Each drone's .skyb file has a different initial hold period:
+
+```csharp
+// Drone 1: Launch immediately
+var traj1 = new TrajectoryBuilder();
+traj1.SetStartPosition(new Vector3WithYaw(0, 0, 0, 0));
+traj1.AppendLine(new Vector3WithYaw(0, 0, 5, 0), 5000); // Immediate takeoff
+
+// Drone 2: Launch 2 seconds later
+var traj2 = new TrajectoryBuilder();
+traj2.SetStartPosition(new Vector3WithYaw(0, 0, 0, 0));
+traj2.HoldPosition(2000);  // Wait 2 seconds
+traj2.AppendLine(new Vector3WithYaw(0, 0, 5, 0), 5000); // Then takeoff
+
+// Drone 3: Launch 4 seconds later
+var traj3 = new TrajectoryBuilder();
+traj3.SetStartPosition(new Vector3WithYaw(0, 0, 0, 0));
+traj3.HoldPosition(4000);  // Wait 4 seconds
+traj3.AppendLine(new Vector3WithYaw(0, 0, 5, 0), 5000); // Then takeoff
+```
+
+**Benefits:**
+- All .skyb files can start at same wall-clock time
+- Drones take off in sequence automatically
+- Can show different ground lighting per drone during wait
+
+**Method 2: External Launch Commands**
+
+Create identical .skyb files, trigger launches at different times externally:
+- Same trajectory in all files
+- Ground control sends launch command to each drone at staggered times
+- Simpler file creation, requires external coordination
+
+### Post-Show Ground Lighting
+
+**Continue showing lights after landing:**
+
+1. **Trajectory** includes landing sequence
+2. **Light Program** continues beyond landing time
+3. **Timing**: Lights keep running after drone is on ground
+
+```csharp
+// Trajectory ends at 20 seconds (landed)
+var traj = new TrajectoryBuilder();
+traj.SetStartPosition(new Vector3WithYaw(0, 0, 0, 0));
+traj.AppendLine(new Vector3WithYaw(0, 0, 5, 0), 5000);  // Takeoff
+traj.HoldPosition(10000);                               // Hover
+traj.AppendLine(new Vector3WithYaw(0, 0, 0, 0), 5000);  // Land (at t=20s)
+
+// Light program continues beyond t=20s:
+// t=0-5:    Takeoff colors
+// t=5-15:   Flight colors  
+// t=15-20:  Landing colors
+// t=20-25:  Post-show ground pattern (drone landed)
+// t=25-30:  Fade out
+```
+
+## Complete File Format Documentation
+
+See `SkybrushFileFormat.cs` for detailed documentation of:
+- All 5 block types (Trajectory, Light Program, Comment, RTH Plan, Yaw Control)
+- Binary format specifications
+- Launch timing strategies
+- Coordinate and time units
+- Examples for every feature
+
+## Files You Need
 
 ### Step 1: Create Yaw Control Data
 
@@ -64,22 +185,79 @@ That's it! Your .skyb file now includes yaw control.
 
 ## Files You Need
 
-For **creating** yaw control (most common use case):
+For **creating complete shows** (most common use case):
+- `SkybrushBinaryWriter.cs` - Write all .skyb file blocks
+- `YawControlBuilder.cs` - Build yaw control data
+- `TrajectoryBuilder.cs` - Build trajectory data
+- `SkybrushFileFormat.cs` - Complete format documentation
+- `CompleteLaunchExample.cs` - Launch timing and ground lighting examples
+
+For **yaw control only**:
 - `YawControlBuilder.cs` - Build yaw control data
 - `SkybrushBinaryWriter.cs` - Write .skyb file blocks
-- `YawCreationExample.cs` - Complete examples
+- `QUICKSTART.md` - Quick reference
 
-For **reading** yaw control (if needed):
+For **reading existing files** (optional):
+- `YawControl.cs`, `YawPlayer.cs` - Read and query yaw data
 - `SkybrushError.cs` - Error handling
-- `YawControl.cs` - Read yaw data
-- `YawPlayer.cs` - Query yaw values
 - `Example.cs` - Reading examples
 
 ## Requirements
 
-- .NET Framework 4.6.1 or higher / .NET Core 2.0 or higher / .NET 5.0 or higher
-- **No native library required** for creating yaw control (pure C#)
-- libskybrush native library only needed for reading/querying existing .skyb files
+- .NET Framework 4.6.1+ / .NET Core 2.0+ / .NET 5.0+
+- **No native library required** for creating .skyb files (pure C#)
+- libskybrush native library only needed for reading existing files
+
+## All Block Types Supported
+
+### 1. Trajectory Block (Required)
+Defines the 3D flight path.
+
+```csharp
+var traj = new TrajectoryBuilder(scale: 10);
+traj.SetStartPosition(new Vector3WithYaw(0, 0, 0, 0));
+traj.HoldPosition(3000);  // Pre-show hold
+traj.AppendLine(new Vector3WithYaw(0, 0, 5000, 0), 5000);
+byte[] trajData = GetTrajectoryBytes(traj);
+SkybrushBinaryWriter.WriteTrajectoryBlock(writer, trajData);
+```
+
+### 2. Light Program Block
+Controls LED colors and pyro effects.
+
+```csharp
+// Light program bytecode (complex format)
+// Use for pre-show ground lighting, flight effects, post-show lighting
+byte[] lightData = CreateLightProgram();
+SkybrushBinaryWriter.WriteLightProgramBlock(writer, lightData);
+```
+
+### 3. Comment Block
+Metadata and documentation.
+
+```csharp
+SkybrushBinaryWriter.WriteCommentBlock(writer, "Show Title: Fireworks 2025");
+SkybrushBinaryWriter.WriteCommentBlock(writer, "Drone ID: D001");
+SkybrushBinaryWriter.WriteCommentBlock(writer, "Author: John Doe");
+```
+
+### 4. RTH (Return-to-Home) Plan Block (Optional)
+Emergency landing procedures.
+
+```csharp
+byte[] rthData = CreateRthPlan();
+SkybrushBinaryWriter.WriteRthPlanBlock(writer, rthData);
+```
+
+### 5. Yaw Control Block
+Rotation control.
+
+```csharp
+var yaw = new YawControlBuilder();
+yaw.Spin360(4000);
+yaw.HoldYaw(2000);
+SkybrushBinaryWriter.WriteYawControlBlock(writer, yaw.Build());
+```
 
 ## Detailed Examples
 
