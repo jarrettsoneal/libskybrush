@@ -88,12 +88,17 @@ namespace Skybrush
         /// </summary>
         /// <param name="writer">The binary writer to write to</param>
         /// <param name="version">File format version (1 or 2). Version 2 is recommended. Default is 2.</param>
-        /// <param name="features">Feature flags for version 2 files. Usually 0 for no CRC32. Default is 0.</param>
+        /// <param name="features">Feature flags for version 2 files (ignored for version 1). Bit 0 = CRC32 checksum. Default is 0.</param>
         public static void WriteFileHeader(BinaryWriter writer, byte version = 2, byte features = 0)
         {
             if (version != 1 && version != 2)
             {
                 throw new ArgumentException("Version must be 1 or 2", nameof(version));
+            }
+
+            if (version == 1 && features != 0)
+            {
+                throw new ArgumentException("Version 1 files do not support feature flags (features must be 0)", nameof(features));
             }
 
             // Write magic header "skyb"

@@ -75,10 +75,12 @@ namespace SkybrushLaunchExample
             
             byte[] trajectoryData = GetTrajectoryBytes(trajBuilder);
 
-            // Create yaw control (optional - pointing north the whole time)
+            // Yaw control (optional - pointing north the whole time)
             var yawBuilder = new YawControlBuilder();
             yawBuilder.YawOffsetDegrees = 0;
-            yawBuilder.HoldYaw((ushort)trajBuilder.GetBuffer().end.ToInt64()); // Hold for entire duration
+            // Note: For complete implementation, calculate actual trajectory duration
+            // For now, using a safe maximum value
+            yawBuilder.HoldYaw(25000); // Hold for 25 seconds (covers full trajectory)
             byte[] yawData = yawBuilder.Build();
 
             // NOTE: Light program would be created here
@@ -275,21 +277,27 @@ namespace SkybrushLaunchExample
         }
 
         /// <summary>
-        /// Helper to get trajectory bytes from builder
+        /// Helper to get trajectory bytes from builder.
+        /// NOTE: This is a placeholder implementation for demonstration purposes.
+        /// 
+        /// In a real implementation, you would either:
+        /// 1. Use the native library's trajectory builder and extract bytes
+        /// 2. Implement complete trajectory binary encoding in C#
+        /// 3. Use your own trajectory generation code
+        /// 
+        /// The trajectory binary format is complex and requires proper encoding
+        /// of segments, coordinates, and timing data.
         /// </summary>
         static byte[] GetTrajectoryBytes(TrajectoryBuilder builder)
         {
-            // In a real implementation, this would extract the bytes from the buffer
-            // For now, returning a placeholder
-            var buffer = builder.GetBuffer();
+            // PLACEHOLDER: This returns a minimal valid trajectory header
+            // Real implementation needed to extract actual trajectory data
             
-            // This is a simplified version - actual implementation would need to:
-            // 1. Get the internal buffer data
-            // 2. Convert to byte array
-            // 3. Return proper trajectory format
+            Console.WriteLine("  WARNING: Using placeholder trajectory data");
+            Console.WriteLine("  For production use, implement proper trajectory byte extraction");
             
-            // Placeholder: return minimal valid trajectory
-            return new byte[] { 10, 0, 0, 0, 0, 0, 0, 0, 0 }; // Scale=10, start at origin
+            // Minimal valid trajectory: scale=10, start at origin
+            return new byte[] { 10, 0, 0, 0, 0, 0, 0, 0, 0 };
         }
     }
 }

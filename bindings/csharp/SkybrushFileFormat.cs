@@ -26,11 +26,23 @@ namespace Skybrush
     /// <summary>
     /// Complete reference for the Skybrush binary (.skyb) file format.
     /// This document describes all block types and options available for creating drone shows.
+    /// 
+    /// Note: This class contains embedded documentation as a string constant for easy reference.
+    /// For production use, consider extracting to separate documentation files if needed.
     /// </summary>
     public static class SkybrushFileFormat
     {
         /// <summary>
         /// Complete documentation of the Skybrush .skyb file format.
+        /// Access this string to get comprehensive format documentation programmatically.
+        /// 
+        /// Topics covered:
+        /// - File structure (header + blocks)
+        /// - All 5 block types with binary format specs
+        /// - Launch timing strategies
+        /// - Ground lighting techniques
+        /// - Data type reference
+        /// - Binary encoding details
         /// </summary>
         public const string Documentation = @"
 # Skybrush .skyb File Format - Complete Reference
